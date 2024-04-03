@@ -1,0 +1,36 @@
+version: "3"
+name: "vhm-template"
+services:
+  postgres:
+    image: postgres:14
+    ports:
+      - 5432:5432
+    healthcheck:
+      test: ['CMD', 'pg_isready', '-U', 'vhm-template']
+      interval: 30s
+      timeout: 20s
+      retries: 3
+    environment:
+      POSTGRES_USER: vhm-template
+      POSTGRES_PASSWORD: vhm-template
+      POSTGRES_DB: vhm-template
+
+  redis:
+    image: redis
+    ports:
+      - 9736:6379
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 10s
+      timeout: 30s
+      retries: 3
+
+  redis_commander:
+    image: rediscommander/redis-commander:latest
+    environment:
+      - REDIS_HOSTS=redis:redis:6379
+    ports:
+      - 1808:8081
+    depends_on:
+      - redis
+

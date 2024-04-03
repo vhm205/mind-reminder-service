@@ -1,0 +1,20 @@
+version: "3"
+name: "url-utils"
+services:
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: rabbitmq_url_utils
+    ports:
+      - 5672:5672
+      - 15672:15672
+    healthcheck:
+      test: ['CMD', 'rabbitmqctl', 'status']
+      interval: 30s
+      timeout: 20s
+      retries: 3
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana_url_utils
+    ports:
+      - 3000:3000
