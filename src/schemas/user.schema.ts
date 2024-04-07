@@ -16,6 +16,17 @@ export interface IUserAgent {
   browser?: string;
 }
 
+export class OAuthProfile {
+  @Prop({ type: String, required: true })
+  provider: string;
+
+  @Prop({ type: String })
+  accessToken: string;
+
+  @Prop({ type: SchemaType.Types.Mixed })
+  metadata: Record<string, any>;
+}
+
 @Schema({
   collection: USER_COLLECTION_NAME,
   timestamps: true,
@@ -40,8 +51,8 @@ export class User extends BaseSchema {
   @Prop({ type: String, nullable: true })
   avatar: string;
 
-  @Prop({ type: String, nullable: true })
-  refreshToken: string;
+  @Prop({ type: Array, default: [] })
+  oauthProfile: OAuthProfile[];
 
   @Prop({ type: Date, nullable: true })
   lastLogin: Date;

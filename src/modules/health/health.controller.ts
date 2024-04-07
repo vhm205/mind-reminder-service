@@ -5,6 +5,7 @@ import {
   HealthCheck,
   MemoryHealthIndicator,
 } from '@nestjs/terminus';
+import { Public } from '@common';
 
 @Controller('health')
 export class HealthController {
@@ -15,6 +16,7 @@ export class HealthController {
   ) {}
 
   @Get()
+  @Public()
   @HealthCheck()
   check() {
     return this.health.check([

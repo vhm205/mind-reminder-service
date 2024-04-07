@@ -1,3 +1,4 @@
+import type { Request } from 'express';
 import { PartialType, PickType } from '@nestjs/swagger';
 import { User } from '@schema';
 
@@ -7,14 +8,12 @@ export interface AuthPayload {
 
 export interface TokenResponse {
   accessToken: string;
-  refreshToken?: string;
 }
 
-export class AuthRequestPayload {
+export class AuthRequestPayload extends Request {
   user: AuthPayload;
-  isAuthenticated: boolean;
 }
 
 export class LoginInfoPayload extends PartialType(
-  PickType(User, ['id', 'refreshToken', 'lastLogin', 'userAgent'] as const),
+  PickType(User, ['id', 'lastLogin', 'userAgent'] as const),
 ) {}

@@ -1,5 +1,5 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
-import { APP_FILTER, APP_PIPE } from '@nestjs/core';
+import { APP_FILTER, APP_GUARD, APP_PIPE } from '@nestjs/core';
 import { MongooseModule } from '@nestjs/mongoose';
 import { CacheModule } from '@nestjs/cache-manager';
 import { ioRedisStore } from '@tirke/node-cache-manager-ioredis';
@@ -9,7 +9,8 @@ import { LoggerMiddleware } from './common/middlewares';
 import { ValidationPipe } from './common/pipes';
 import { MongooseConfigService } from './configs/mongo.config';
 
-import { HealthModule, NoteModule, ChannelModule } from '@modules';
+import { HealthModule, AuthModule, NoteModule, ChannelModule } from '@modules';
+import { JWTAuthGuard } from './common/guards';
 
 @Module({
   imports: [
@@ -22,10 +23,15 @@ import { HealthModule, NoteModule, ChannelModule } from '@modules';
       isGlobal: true,
     }),
     HealthModule,
+    AuthModule,
     NoteModule,
     ChannelModule,
   ],
   providers: [
+    {
+      provide: APP_GUARD,
+      useClass: JWTAuthGuard,
+    },
     {
       provide: APP_FILTER,
       useClass: HttpExceptionFilter,

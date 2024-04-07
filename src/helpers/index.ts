@@ -1,3 +1,9 @@
+import env from '@environments';
+
+export const isProd = () => {
+  return env.NODE_ENV === 'production';
+};
+
 export const generateUnique = (): string => {
   const characters =
     'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -9,3 +15,5 @@ export const generateUnique = (): string => {
 
   return link;
 };
+
+export * from './time';
