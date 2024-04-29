@@ -1,6 +1,7 @@
 import { ApiPropertyOptional, ApiResponseProperty } from '@nestjs/swagger';
 import { IsEnum, IsInt, IsOptional, Max, Min } from 'class-validator';
 import { Type } from 'class-transformer';
+import { SortOrder } from 'mongoose';
 
 export enum SortDirection {
   ASC = 'ASC',
@@ -13,7 +14,7 @@ export enum SortDirection {
 export class PageOptionsDto {
   @ApiPropertyOptional({ default: 'createdAt' })
   @IsOptional()
-  sort = 'createdAt';
+  sortBy = 'createdAt';
 
   @ApiPropertyOptional({ enum: SortDirection, default: SortDirection.DESC })
   @IsEnum(SortDirection)
@@ -34,6 +35,13 @@ export class PageOptionsDto {
   @Max(50)
   @IsOptional()
   limit = 10;
+
+  get sort(): { [key: string]: SortOrder } {
+    const sortType: SortOrder =
+      this.sortDirection === SortDirection.ASC ? 1 : -1;
+    const sortCond = { [this.sortBy]: sortType };
+    return sortCond;
+  }
 
   get skip(): number {
     return ((this.page || 1) - 1) * (this.limit || 10);

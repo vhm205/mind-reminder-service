@@ -7,10 +7,10 @@ import { ioRedisStore } from '@tirke/node-cache-manager-ioredis';
 import { HttpExceptionFilter } from './common/filters';
 import { LoggerMiddleware } from './common/middlewares';
 import { ValidationPipe } from './common/pipes';
+import { JWTAuthGuard } from './common/guards';
 import { MongooseConfigService } from './configs/mongo.config';
 
 import { HealthModule, AuthModule, NoteModule, ChannelModule } from '@modules';
-import { JWTAuthGuard } from './common/guards';
 
 @Module({
   imports: [

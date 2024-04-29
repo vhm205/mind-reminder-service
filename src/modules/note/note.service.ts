@@ -33,7 +33,31 @@ export class NoteService {
     userId: string,
   ): Promise<ResponseType<CreateNoteResponseDto>> {
     try {
-      const newNote = await this.noteModel.create({ ...payload, user: userId });
+      let { channelId, content, tags } = payload;
+
+      if (!payload.channelId) {
+        const channel = await this.channelModel.findOne({
+          isDefault: true,
+          user: userId,
+          deletedAt: null,
+        });
+
+        if (!channel) {
+          throw new HttpException(
+            'You need to connect to at least one channel',
+            HttpStatus.NOT_FOUND,
+          );
+        }
+
+        channelId = channel.id;
+      }
+
+      const newNote = await this.noteModel.create({
+        content,
+        tags,
+        channel: channelId,
+        user: userId,
+      });
       return { data: { id: newNote.id }, statusCode: HttpStatus.CREATED };
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);

@@ -12,6 +12,7 @@ export interface TokenResponse {
 
 export class AuthRequestPayload extends Request {
   user: AuthPayload;
+  isAuthenticated: boolean;
 }
 
 export class LoginInfoPayload extends PartialType(

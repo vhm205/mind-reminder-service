@@ -17,6 +17,8 @@ const {
   API_URL,
   CLIENT_URL,
   API_VERSION,
+  TELEGRAM_BOT_TOKEN,
+  TELEGRAM_BOT_USERNAME,
 } = process.env;
 
 if (NODE_ENV && !['test', 'production', 'development'].includes(NODE_ENV)) {
@@ -47,6 +49,10 @@ if (!API_URL || !CLIENT_URL || !API_VERSION) {
   throw new Error('API_URL || CLIENT_URL env is not define');
 }
 
+if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_BOT_USERNAME) {
+  throw new Error('Telegram env is not define');
+}
+
 export default {
   PORT,
   NODE_ENV,
@@ -62,4 +68,6 @@ export default {
   API_URL,
   CLIENT_URL,
   API_VERSION,
+  TELEGRAM_BOT_TOKEN,
+  TELEGRAM_BOT_USERNAME,
 };

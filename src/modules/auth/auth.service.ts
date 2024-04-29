@@ -13,8 +13,16 @@ import { JwtService } from '@nestjs/jwt';
 import { isProd, momentTZ } from '@helpers';
 
 import env from '@environments';
-import { EUserStatus, IUserAgent, OAuthProfile, User } from '@schema';
-import { GooglePayload } from './dtos';
+import {
+  EChannelType,
+  EUserStatus,
+  IUserAgent,
+  OAuthProfile,
+  User,
+} from '@schema';
+import { GooglePayload, TelegramQueryDto } from './dtos';
+import { ChannelService } from '../channel/channel.service';
+import { TelegramService } from '../telegram/telegram.service';
 
 @Injectable()
 export class AuthService {
@@ -22,6 +30,8 @@ export class AuthService {
     @InjectModel(User.name)
     private userModel: Model<User>,
     private jwtService: JwtService,
+    private channelService: ChannelService,
+    private telegramService: TelegramService,
   ) {}
 
   async validateGoogle(payload: GooglePayload): Promise<AuthPayload> {
@@ -86,7 +96,7 @@ export class AuthService {
         .lean();
 
       if (!user) {
-        throw new BadRequestException('User is not found');
+        throw new BadRequestException('User not found');
       }
 
       const userAgentHeader = headers['user-agent'];
@@ -140,6 +150,12 @@ export class AuthService {
       maxAge: +env.ACCESS_TOKEN_EXPIRES_IN * 1000,
       sameSite: isProd() ? 'lax' : 'strict',
     });
+    res.cookie('isAuthenticated', true, {
+      httpOnly: false,
+      secure: false,
+      maxAge: +env.ACCESS_TOKEN_EXPIRES_IN * 1000,
+      sameSite: isProd() ? 'lax' : 'strict',
+    });
   }
 
   clearTokenCookies(res: Response): void {
@@ -149,5 +165,38 @@ export class AuthService {
       signed: true,
       sameSite: isProd() ? 'lax' : 'strict',
     });
+    res.clearCookie('isAuthenticated', {
+      httpOnly: false,
+      secure: false,
+      sameSite: isProd() ? 'lax' : 'strict',
+    });
+  }
+
+  async validateTelegram(query: TelegramQueryDto): Promise<boolean> {
+    try {
+      // TODO: https://gist.github.com/anonymous/6516521b1fb3b464534fbc30ea3573c2#file-login_example-php-L36
+
+      this.telegramService.sendMessage(
+        query.id,
+        `Hi ${query.username}, I'm a bot, and I will remind you of your notes.`,
+      );
+
+      await this.channelService.createChannel(
+        {
+          type: EChannelType.TELEGRAM,
+          name: `telegram-${query.username}`,
+          metadata: {
+            id: query.id,
+            username: query.username,
+            photo_url: query.photo_url,
+          },
+        },
+        query.uid,
+      );
+
+      return true;
+    } catch (error) {
+      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
   }
 }

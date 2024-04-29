@@ -1,5 +1,7 @@
-import { ApiResponseProperty } from '@nestjs/swagger';
+import { PageOptionsDto } from '@common';
+import { ApiPropertyOptional, ApiResponseProperty } from '@nestjs/swagger';
 import { EChannelType, EChannelStatus } from '@schema';
+import { IsOptional, IsString } from 'class-validator';
 
 export class GetChannelResponseDto {
   @ApiResponseProperty()
@@ -13,4 +15,11 @@ export class GetChannelResponseDto {
 
   @ApiResponseProperty()
   status: EChannelStatus;
+}
+
+export class GetListChannelDto extends PageOptionsDto {
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  keyword: string;
 }

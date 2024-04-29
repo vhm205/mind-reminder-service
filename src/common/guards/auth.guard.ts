@@ -39,6 +39,7 @@ export class JWTAuthGuard implements CanActivate {
       });
 
       request['user'] = payload;
+      request['isAuthenticated'] = true;
     } catch (error: any) {
       throw new UnauthorizedException();
     }

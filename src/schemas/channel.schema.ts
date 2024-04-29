@@ -20,8 +20,7 @@ export enum EChannelType {
 }
 
 export interface IConnection {
-  token: string;
-  secret: string;
+  [key: string]: any;
 }
 
 @Schema({
@@ -46,9 +45,14 @@ export class Channel extends BaseSchema {
 
   @Prop({ type: SchemaType.Types.Mixed })
   metadata: IConnection;
+
+  @Prop({ type: Boolean, default: false })
+  isDefault: boolean;
 }
 
 export const ChannelSchema = SchemaFactory.createForClass(Channel);
+
+ChannelSchema.index({ '$**': 'text' });
 
 ChannelSchema.virtual('id').get(function (this) {
   return this._id.toString();

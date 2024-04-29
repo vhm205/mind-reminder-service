@@ -1,5 +1,5 @@
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
-import { Schema } from 'mongoose';
+import mongoose from 'mongoose';
 
 export const CurrentUser = createParamDecorator<string>(
   (prop: string, ctx: ExecutionContext) => {
@@ -7,7 +7,8 @@ export const CurrentUser = createParamDecorator<string>(
     const user = request['user'];
 
     if (!user) {
-      return { uid: Schema.ObjectId.toString() };
+      const _id = new mongoose.Types.ObjectId();
+      return { uid: _id };
     }
 
     return prop ? user[prop] : user;

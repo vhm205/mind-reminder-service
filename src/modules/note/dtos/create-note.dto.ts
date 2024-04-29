@@ -11,7 +11,8 @@ export class CreateNoteDto {
   tags: string[];
 
   @IsString()
-  channel: string;
+  @IsOptional()
+  channelId: string;
 }
 
 export class CreateNoteResponseDto {

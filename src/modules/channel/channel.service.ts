@@ -3,12 +3,13 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
 import { Channel, EChannelStatus } from '@schema';
-import { ResponseType } from '@common';
+import { PageDto, PageMetaDto, ResponseType } from '@common';
 import {
   CreateChannelDto,
   CreateChannelResponseDto,
   DeleteChannelResponseDto,
   GetChannelResponseDto,
+  GetListChannelDto,
   UpdateChannelDto,
   UpdateChannelResponseDto,
 } from './dtos';
@@ -34,8 +35,16 @@ export class ChannelService {
         throw new HttpException('Duplicate Channel', HttpStatus.BAD_REQUEST);
       }
 
+      const totalChannel = await this.channelModel.countDocuments({
+        user: userId,
+        status: EChannelStatus.ACTIVE,
+        isDefault: true,
+        deletedAt: null,
+      });
+
       const newChannel = await this.channelModel.create({
         ...payload,
+        isDefault: totalChannel === 0,
         user: userId,
       });
       return { data: { id: newChannel.id }, statusCode: HttpStatus.CREATED };
@@ -67,17 +76,35 @@ export class ChannelService {
     }
   }
 
-  async getChannels(
-    userId: string,
-  ): Promise<ResponseType<GetChannelResponseDto[]>> {
+  async getChannels(query: GetListChannelDto, userId: string) {
     try {
+      const filters: Record<string, any> = {
+        user: userId,
+        deletedAt: null,
+      };
+
+      if (query.keyword) {
+        filters['$text'] = { $search: query.keyword };
+      }
+
       const channels = await this.channelModel
-        .find({ user: userId, deletedAt: null })
+        .find(filters)
         .select('-_id id name type status')
+        .sort(query.sort)
+        .skip(query.skip)
+        .limit(query.limit)
         .lean();
 
+      const totalRecord = await this.channelModel.countDocuments();
+
+      const pageMeta = new PageMetaDto({
+        totalRecord,
+        pageOptionsDto: query,
+      });
+      const pageData = new PageDto(channels, pageMeta);
+
       return {
-        data: channels,
+        data: pageData,
         statusCode: HttpStatus.OK,
       };
     } catch (error) {
