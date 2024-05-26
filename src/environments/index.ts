@@ -19,6 +19,9 @@ const {
   API_VERSION,
   TELEGRAM_BOT_TOKEN,
   TELEGRAM_BOT_USERNAME,
+  MONGODB_URI,
+  QUEUE_COLLECTION_REMINDER,
+  QUEUE_REMINDER,
 } = process.env;
 
 if (NODE_ENV && !['test', 'production', 'development'].includes(NODE_ENV)) {
@@ -53,6 +56,10 @@ if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_BOT_USERNAME) {
   throw new Error('Telegram env is not define');
 }
 
+if (!MONGODB_URI) {
+  throw new Error('MONGODB_URI env is not define');
+}
+
 export default {
   PORT,
   NODE_ENV,
@@ -70,4 +77,7 @@ export default {
   API_VERSION,
   TELEGRAM_BOT_TOKEN,
   TELEGRAM_BOT_USERNAME,
+  MONGODB_URI,
+  QUEUE_COLLECTION_REMINDER,
+  QUEUE_REMINDER,
 };

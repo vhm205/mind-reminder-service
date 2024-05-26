@@ -10,12 +10,7 @@ import {
 } from '@nestjs/common';
 import type { Response } from 'express';
 import { AuthService } from './auth.service';
-import {
-  AuthRequestPayload,
-  CurrentUser,
-  GoogleOAuthGuard,
-  Public,
-} from '@common';
+import { AuthRequestPayload, GoogleOAuthGuard, Public } from '@common';
 import env from '@environments';
 import { TelegramQueryDto } from './dtos';
 

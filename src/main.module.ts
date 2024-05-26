@@ -3,6 +3,8 @@ import { APP_FILTER, APP_GUARD, APP_PIPE } from '@nestjs/core';
 import { MongooseModule } from '@nestjs/mongoose';
 import { CacheModule } from '@nestjs/cache-manager';
 import { ioRedisStore } from '@tirke/node-cache-manager-ioredis';
+import { AgendaModule } from 'agenda-nest';
+import env from '@environments';
 
 import { HttpExceptionFilter } from './common/filters';
 import { LoggerMiddleware } from './common/middlewares';
@@ -21,6 +23,11 @@ import { HealthModule, AuthModule, NoteModule, ChannelModule } from '@modules';
       store: ioRedisStore,
       url: process.env.REDIS_URL,
       isGlobal: true,
+    }),
+    AgendaModule.forRoot({
+      db: {
+        address: env.MONGODB_URI!,
+      },
     }),
     HealthModule,
     AuthModule,

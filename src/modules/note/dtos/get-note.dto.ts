@@ -1,6 +1,7 @@
 import { ApiResponseProperty } from '@nestjs/swagger';
 import { EChannelType } from '@schema';
 import { PageOptionsDto } from '@common';
+import { ObjectId } from 'mongoose';
 
 class Channel {
   name: string;
@@ -23,4 +24,10 @@ export class GetNoteResponseDto {
 
   @ApiResponseProperty()
   channel?: Channel;
+
+  @ApiResponseProperty()
+  createdAt: Date;
+
+  @ApiResponseProperty()
+  updatedAt: Date | null;
 }

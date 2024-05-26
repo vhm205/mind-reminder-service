@@ -8,17 +8,21 @@ import {
   Param,
   Patch,
   Post,
+  Query,
 } from '@nestjs/common';
 import { NoteService } from './note.service';
-import { ResponseType, CurrentUser } from '@common';
+import { ResponseType, CurrentUser, PageDto } from '@common';
 import {
   CreateNoteDto,
   CreateNoteResponseDto,
   DeleteNoteResponseDto,
   GetNoteResponseDto,
+  GetNotesQueryDto,
   UpdateNoteDto,
   UpdateNoteResponseDto,
 } from './dtos';
+import { Note } from '@schema';
+import { ApiOkResponse } from '@nestjs/swagger';
 
 @Controller({
   path: 'notes',
@@ -41,6 +45,16 @@ export class NoteController {
     @CurrentUser('uid') userId: string,
   ): Promise<ResponseType<GetNoteResponseDto>> {
     return this.noteService.getNote(nid, userId);
+  }
+
+  @Get('')
+  @HttpCode(HttpStatus.OK)
+  @ApiOkResponse({ type: PageDto<GetNoteResponseDto> })
+  getNotes(
+    @Query() query: GetNotesQueryDto,
+    @CurrentUser('uid') userId: string,
+  ): Promise<ResponseType<PageDto<Omit<Note, 'channel'>>>> {
+    return this.noteService.getNotes(query, userId);
   }
 
   @Patch('/:nid')

@@ -1,8 +1,9 @@
-import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { InjectQueue } from 'agenda-nest';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { RedisCache } from '@tirke/node-cache-manager-ioredis';
+// import { CACHE_MANAGER } from '@nestjs/cache-manager';
+// import { RedisCache } from '@tirke/node-cache-manager-ioredis';
 
 import { Channel, Note } from '@schema';
 import { PageDto, PageMetaDto, ResponseType } from '@common';
@@ -15,13 +16,15 @@ import {
   UpdateNoteDto,
   UpdateNoteResponseDto,
 } from './dtos';
+import env from '@environments';
 
 @Injectable()
 export class NoteService {
   constructor(
     @InjectModel(Note.name) private noteModel: Model<Note>,
     @InjectModel(Channel.name) private channelModel: Model<Channel>,
-    @Inject(CACHE_MANAGER) private redisCache: RedisCache,
+    @InjectQueue(env.QUEUE_REMINDER) private queue: any,
+    // @Inject(CACHE_MANAGER) private redisCache: RedisCache,
   ) {}
 
   getRedisKey(params: string): string {
@@ -58,6 +61,9 @@ export class NoteService {
         channel: channelId,
         user: userId,
       });
+
+      this.queue.every('5 hours', 'send reminder', newNote);
+
       return { data: { id: newNote.id }, statusCode: HttpStatus.CREATED };
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -71,7 +77,7 @@ export class NoteService {
     try {
       const note = await this.noteModel
         .findOne({ _id: id, user: userId })
-        .select('-_id id content tags channel status')
+        .select('*')
         .populate({
           path: 'channel',
           select: 'name type',
@@ -88,6 +94,8 @@ export class NoteService {
           content: note.content,
           tags: note.tags,
           channel: note.channel as Channel,
+          createdAt: note.createdAt,
+          updatedAt: note.updatedAt,
         },
         statusCode: HttpStatus.OK,
       };
@@ -96,14 +104,21 @@ export class NoteService {
     }
   }
 
-  async getNotes(
-    query: GetNotesQueryDto,
-    userId: string,
-  ): Promise<ResponseType<PageDto<GetNoteResponseDto>>> {
+  async getNotes(query: GetNotesQueryDto, userId: string) {
     try {
+      const filters: Record<string, any> = {
+        user: userId,
+        deletedAt: null,
+      };
+
+      if (query.keyword) {
+        filters['$text'] = { $search: query.keyword };
+      }
+
       const notes = await this.noteModel
-        .find({ user: userId })
-        .select('-_id id content tags status')
+        .find(filters)
+        .select('_id content tags status createdAt updatedAt')
+        .sort(query.sort)
         .skip(query.skip)
         .limit(query.limit)
         .lean();
@@ -114,10 +129,7 @@ export class NoteService {
         totalRecord,
         pageOptionsDto: query,
       });
-      const pageData = new PageDto<Omit<GetNoteResponseDto, 'channel'>>(
-        notes,
-        pageMeta,
-      );
+      const pageData = new PageDto<Omit<Note, 'channel'>>(notes, pageMeta);
 
       return {
         data: pageData,
