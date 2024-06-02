@@ -5,7 +5,7 @@ import { Model } from 'mongoose';
 // import { CACHE_MANAGER } from '@nestjs/cache-manager';
 // import { RedisCache } from '@tirke/node-cache-manager-ioredis';
 
-import { Channel, Note } from '@schema';
+import { Channel, EChannelStatus, Note } from '@schema';
 import { PageDto, PageMetaDto, ResponseType } from '@common';
 import {
   CreateNoteDto,
@@ -36,33 +36,37 @@ export class NoteService {
     userId: string,
   ): Promise<ResponseType<CreateNoteResponseDto>> {
     try {
-      let { channelId, content, tags } = payload;
+      let { channelId, content, tags, pushNotification } = payload;
+      let channel = null;
 
-      if (!payload.channelId) {
-        const channel = await this.channelModel.findOne({
-          isDefault: true,
-          user: userId,
-          deletedAt: null,
-        });
+      if (channelId) {
+        const userChannel = await this.channelModel
+          .findOne({
+            _id: channelId,
+            user: userId,
+            status: EChannelStatus.ACTIVE,
+            deletedAt: null,
+          })
+          .lean();
 
-        if (!channel) {
-          throw new HttpException(
-            'You need to connect to at least one channel',
-            HttpStatus.NOT_FOUND,
-          );
+        if (!userChannel) {
+          throw new HttpException('Channel Not Found', HttpStatus.NOT_FOUND);
         }
 
-        channelId = channel.id;
+        channel = userChannel._id;
       }
 
       const newNote = await this.noteModel.create({
         content,
         tags,
-        channel: channelId,
+        channel,
+        pushNotification,
         user: userId,
       });
 
-      this.queue.every('5 hours', 'send reminder', newNote);
+      if (pushNotification) {
+        this.queue.every('5 minutes', 'send reminder', newNote);
+      }
 
       return { data: { id: newNote.id }, statusCode: HttpStatus.CREATED };
     } catch (error) {

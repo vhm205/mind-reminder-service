@@ -25,6 +25,9 @@ export class Note extends BaseSchema {
   @Prop({ type: [String], default: ['Unknown'] })
   tags: string[];
 
+  @Prop({ type: Boolean, default: true })
+  pushNotification: boolean;
+
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: Channel.name })
   channel: Channel | string;
 

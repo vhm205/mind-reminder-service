@@ -1,4 +1,10 @@
-import { IsArray, IsOptional, IsString, MinLength } from 'class-validator';
+import {
+  IsArray,
+  IsBoolean,
+  IsOptional,
+  IsString,
+  MinLength,
+} from 'class-validator';
 
 export class CreateNoteDto {
   @IsString()
@@ -13,6 +19,9 @@ export class CreateNoteDto {
   @IsString()
   @IsOptional()
   channelId: string;
+
+  @IsBoolean()
+  pushNotification: boolean;
 }
 
 export class CreateNoteResponseDto {
