@@ -5,9 +5,12 @@ import { Channel, Note } from '@schema';
 import { TelegramService } from '../telegram/telegram.service';
 import env from '@environments';
 import { momentTZ, spacedRepetitionInterval } from '@helpers';
+import { Logger } from '@nestjs/common';
 
 @Queue(env.QUEUE_REMINDER!)
 export class NoteQueue {
+  private readonly logger = new Logger();
+
   constructor(
     @InjectModel(Channel.name) private readonly channelModel: Model<Channel>,
     @InjectModel(Note.name) private readonly noteModel: Model<Note>,
@@ -38,7 +41,7 @@ export class NoteQueue {
     const formattedNextReviewTime = nextReviewTime.format(
       'YYYY-MM-DD HH:mm:ss',
     );
-    console.log({ formattedNextReviewTime, unix: nextReviewTime.unix() });
+    this.logger.log({ formattedNextReviewTime, unix: nextReviewTime.unix() });
 
     this.queue.schedule(nextReviewTime.unix(), 'reminder', {
       ...job.attrs.data,
