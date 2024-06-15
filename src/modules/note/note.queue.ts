@@ -19,8 +19,11 @@ export class NoteQueue {
   async sendReminder(job: any, done: Function) {
     const { id: noteId, content, repetitionNumber, user } = job.attrs.data;
 
-    const channel = await this.channelModel.findOne({ user }).lean();
-    if (!channel) return;
+    const [channel, note] = await Promise.all([
+      this.channelModel.findOne({ user }).lean(),
+      this.noteModel.findById(noteId).lean(),
+    ]);
+    if (!channel || !note) return;
 
     const { id } = channel.metadata;
     this.telegramService.sendMessage(id, content);
