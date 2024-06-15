@@ -7,6 +7,7 @@ module.exports = {
       // exec_mode: 'cluster',
       env: {
         PORT: 2005,
+        NODE_ENV: 'production',
         API_VERSION: 1,
       },
     },

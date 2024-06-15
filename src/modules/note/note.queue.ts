@@ -38,6 +38,7 @@ export class NoteQueue {
     const formattedNextReviewTime = nextReviewTime.format(
       'YYYY-MM-DD HH:mm:ss',
     );
+    console.log({ formattedNextReviewTime, unix: nextReviewTime.unix() });
 
     this.queue.schedule(nextReviewTime.unix(), 'reminder', {
       ...job.attrs.data,
