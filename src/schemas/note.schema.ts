@@ -32,7 +32,7 @@ export class Note extends BaseSchema {
   repetitionNumber: number;
 
   @Prop({ type: Date })
-  nextReviewTime: Date;
+  nextReviewTime: string;
 
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: Channel.name })
   channel: Channel | string;
