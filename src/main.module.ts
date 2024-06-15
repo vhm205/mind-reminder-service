@@ -16,14 +16,14 @@ import { HealthModule, AuthModule, NoteModule, ChannelModule } from '@modules';
 
 @Module({
   imports: [
-    MongooseModule.forRootAsync({
-      useClass: MongooseConfigService,
-    }),
     // CacheModule.register({
     //   store: ioRedisStore,
     //   url: process.env.REDIS_URL,
     //   isGlobal: true,
     // }),
+    MongooseModule.forRootAsync({
+      useClass: MongooseConfigService,
+    }),
     AgendaModule.forRoot({
       db: {
         address: env.MONGODB_URI!,

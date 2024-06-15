@@ -61,11 +61,12 @@ export class NoteService {
         tags,
         channel,
         pushNotification,
+        repetitionNumber: 1,
         user: userId,
       });
 
       if (pushNotification) {
-        this.queue.every('5 minutes', 'send reminder', newNote);
+        this.queue.schedule('30 minutes', 'reminder', newNote);
       }
 
       return { data: { id: newNote.id }, statusCode: HttpStatus.CREATED };

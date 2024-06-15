@@ -28,6 +28,12 @@ export class Note extends BaseSchema {
   @Prop({ type: Boolean, default: true })
   pushNotification: boolean;
 
+  @Prop({ type: Number, default: 1 })
+  repetitionNumber: number;
+
+  @Prop({ type: Date })
+  nextReviewTime: Date;
+
   @Prop({ type: mongoose.Schema.Types.ObjectId, ref: Channel.name })
   channel: Channel | string;
 

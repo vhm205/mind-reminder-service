@@ -16,4 +16,11 @@ export const generateUnique = (): string => {
   return link;
 };
 
+export const spacedRepetitionInterval = (
+  initialInterval: number,
+  repetitionNumber: number,
+) => {
+  return initialInterval * Math.pow(2, repetitionNumber);
+};
+
 export * from './time';
