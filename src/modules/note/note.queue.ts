@@ -28,7 +28,7 @@ export class NoteQueue {
       this.noteModel.findById(noteId).lean(),
     ]);
     this.logger.log({ channel, note });
-    if (!channel || !note) return;
+    if (!channel) return;
 
     const { id } = channel.metadata;
     this.telegramService.sendMessage(id, content);

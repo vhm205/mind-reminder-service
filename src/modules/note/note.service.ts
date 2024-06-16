@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
 import { InjectQueue } from 'agenda-nest';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
@@ -20,6 +20,8 @@ import env from '@environments';
 
 @Injectable()
 export class NoteService {
+  private readonly logger = new Logger();
+
   constructor(
     @InjectModel(Note.name) private noteModel: Model<Note>,
     @InjectModel(Channel.name) private channelModel: Model<Channel>,
@@ -65,6 +67,7 @@ export class NoteService {
         user: userId,
       });
 
+      this.logger.debug('newNote', newNote);
       if (pushNotification) {
         this.queue.schedule('1 minutes', 'reminder', newNote);
       }
