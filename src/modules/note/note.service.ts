@@ -67,13 +67,13 @@ export class NoteService {
         user: userId,
       });
 
-      this.logger.debug('newNote', newNote);
       if (pushNotification) {
         this.queue.schedule('1 minutes', 'reminder', newNote);
       }
 
       return { data: { id: newNote.id }, statusCode: HttpStatus.CREATED };
     } catch (error) {
+      this.logger.error('create note error: ', error.message);
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
@@ -108,6 +108,7 @@ export class NoteService {
         statusCode: HttpStatus.OK,
       };
     } catch (error) {
+      this.logger.error('get note error: ', error.message);
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
@@ -144,6 +145,7 @@ export class NoteService {
         statusCode: HttpStatus.OK,
       };
     } catch (error) {
+      this.logger.error('get notes error: ', error.message);
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
@@ -170,6 +172,7 @@ export class NoteService {
         statusCode: HttpStatus.OK,
       };
     } catch (error) {
+      this.logger.error('update note error: ', error.message);
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
@@ -198,6 +201,7 @@ export class NoteService {
         },
       };
     } catch (error) {
+      this.logger.error('delete note error: ', error.message);
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }

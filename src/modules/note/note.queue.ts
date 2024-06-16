@@ -43,13 +43,17 @@ export class NoteQueue {
     const formattedNextReviewTime = nextReviewTime.format(
       'YYYY-MM-DD HH:mm:ss',
     );
-    this.logger.log({ formattedNextReviewTime, unix: nextReviewTime.unix() });
-
-    this.queue.schedule(nextReviewTime.unix(), 'reminder', {
-      ...job.attrs.data,
-      nextReviewTime: formattedNextReviewTime,
-      repetitionNumber: repetitionNumber + 1,
+    this.logger.log({
+      formattedNextReviewTime,
+      spacedRepetition,
+      unix: nextReviewTime.unix(),
     });
+
+    // this.queue.schedule(nextReviewTime.unix(), 'reminder', {
+    //   ...job.attrs.data,
+    //   nextReviewTime: formattedNextReviewTime,
+    //   repetitionNumber: repetitionNumber + 1,
+    // });
 
     await this.noteModel.findByIdAndUpdate(noteId, {
       $set: {
@@ -61,6 +65,7 @@ export class NoteQueue {
     });
 
     done();
+    job.remove();
   }
 
   @OnQueueError()
