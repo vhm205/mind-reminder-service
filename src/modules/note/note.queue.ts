@@ -20,7 +20,7 @@ export class NoteQueue {
 
   @Define('reminder')
   async sendReminder(job: any, done: Function) {
-    const { id: noteId, content, repetitionNumber, user } = job.attrs.data;
+    const { _id: noteId, content, repetitionNumber, user } = job.attrs.data;
 
     this.logger.log({ noteId, content, repetitionNumber, user });
     const [channel, note] = await Promise.all([
