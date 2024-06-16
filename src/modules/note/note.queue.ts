@@ -26,6 +26,7 @@ export class NoteQueue {
       this.channelModel.findOne({ user }).lean(),
       this.noteModel.findById(noteId).lean(),
     ]);
+    this.logger.log({ channel, note });
     if (!channel || !note) return;
 
     const { id } = channel.metadata;

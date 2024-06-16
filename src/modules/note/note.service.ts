@@ -66,7 +66,7 @@ export class NoteService {
       });
 
       if (pushNotification) {
-        this.queue.schedule('30 minutes', 'reminder', newNote);
+        this.queue.schedule('1 minutes', 'reminder', newNote);
       }
 
       return { data: { id: newNote.id }, statusCode: HttpStatus.CREATED };
