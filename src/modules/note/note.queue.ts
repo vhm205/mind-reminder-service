@@ -1,4 +1,10 @@
-import { Define, InjectQueue, OnQueueError, Queue } from 'agenda-nest';
+import {
+  Define,
+  InjectQueue,
+  OnJobComplete,
+  OnQueueError,
+  Queue,
+} from 'agenda-nest';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Channel, Note } from '@schema';
@@ -47,6 +53,7 @@ export class NoteQueue {
       formattedNextReviewTime,
       spacedRepetition,
       unix: nextReviewTime.unix(),
+      valueOf: nextReviewTime.valueOf(),
     });
 
     // this.queue.schedule(nextReviewTime.unix(), 'reminder', {
@@ -65,6 +72,10 @@ export class NoteQueue {
     });
 
     done();
+  }
+
+  @OnJobComplete('reminder')
+  onJobComplete(job: any) {
     job.remove();
   }
 
