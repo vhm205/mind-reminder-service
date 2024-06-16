@@ -1,3 +1,4 @@
+import { Logger } from '@nestjs/common';
 import {
   Define,
   InjectQueue,
@@ -11,7 +12,6 @@ import { Channel, Note } from '@schema';
 import { TelegramService } from '../telegram/telegram.service';
 import env from '@environments';
 import { momentTZ, spacedRepetitionInterval } from '@helpers';
-import { Logger } from '@nestjs/common';
 
 @Queue(env.QUEUE_REMINDER!)
 export class NoteQueue {
@@ -27,14 +27,13 @@ export class NoteQueue {
   @Define('reminder')
   async sendReminder(job: any, done: Function) {
     const { _id: noteId, content, repetitionNumber, user } = job.attrs.data;
+    this.logger.log({ data: job.attrs.data });
 
-    this.logger.log({ noteId, content, repetitionNumber, user });
     const [channel, note] = await Promise.all([
       this.channelModel.findOne({ user }).lean(),
       this.noteModel.findById(noteId).lean(),
     ]);
-    this.logger.log({ channel, note });
-    if (!channel) return;
+    if (!channel || !note) return;
 
     const { id } = channel.metadata;
     this.telegramService.sendMessage(id, content);
@@ -46,21 +45,15 @@ export class NoteQueue {
       repetitionNumber,
     );
     const nextReviewTime = now.add(spacedRepetition, 'days');
+    const timestamp = nextReviewTime.valueOf();
     const formattedNextReviewTime = nextReviewTime.format(
       'YYYY-MM-DD HH:mm:ss',
     );
-    this.logger.log({
-      formattedNextReviewTime,
-      spacedRepetition,
-      unix: nextReviewTime.unix(),
-      valueOf: nextReviewTime.valueOf(),
-    });
 
-    // this.queue.schedule(nextReviewTime.unix(), 'reminder', {
-    //   ...job.attrs.data,
-    //   nextReviewTime: formattedNextReviewTime,
-    //   repetitionNumber: repetitionNumber + 1,
-    // });
+    this.queue.schedule(timestamp, 'reminder', {
+      ...job.attrs.data,
+      repetitionNumber: repetitionNumber + 1,
+    });
 
     await this.noteModel.findByIdAndUpdate(noteId, {
       $set: {
@@ -81,6 +74,6 @@ export class NoteQueue {
 
   @OnQueueError()
   onError(error: any) {
-    console.error(error);
+    this.logger.error('queue error: ', error);
   }
 }
