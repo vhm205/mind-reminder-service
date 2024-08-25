@@ -1,8 +1,8 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { APP_FILTER, APP_GUARD, APP_PIPE } from '@nestjs/core';
 import { MongooseModule } from '@nestjs/mongoose';
-// import { CacheModule } from '@nestjs/cache-manager';
-// import { ioRedisStore } from '@tirke/node-cache-manager-ioredis';
+import { CacheModule } from '@nestjs/cache-manager';
+import { ioRedisStore } from '@tirke/node-cache-manager-ioredis';
 import { AgendaModule } from 'agenda-nest';
 import env from '@environments';
 
@@ -12,27 +12,41 @@ import { ValidationPipe } from './common/pipes';
 import { JWTAuthGuard } from './common/guards';
 import { MongooseConfigService } from './configs/mongo.config';
 
-import { HealthModule, AuthModule, NoteModule, ChannelModule } from '@modules';
+import {
+  HealthModule,
+  AuthModule,
+  NoteModule,
+  ChannelModule,
+  TopicModule,
+} from '@modules';
 
 @Module({
   imports: [
-    // CacheModule.register({
-    //   store: ioRedisStore,
-    //   url: process.env.REDIS_URL,
-    //   isGlobal: true,
-    // }),
+    CacheModule.register({
+      store: ioRedisStore,
+      url: process.env.REDIS_URL,
+      isGlobal: true,
+    }),
     MongooseModule.forRootAsync({
       useClass: MongooseConfigService,
     }),
-    AgendaModule.forRoot({
-      db: {
-        address: env.MONGODB_URI!,
-      },
+    AgendaModule.forRootAsync({
+      useFactory: () => ({
+        db: {
+          address: env.MONGODB_URI!,
+        },
+        defaultLockLimit: 1,
+        defaultLockLifetime: 10000,
+        catch(onrejected) {
+          console.log({ onrejected });
+        },
+      }),
     }),
     HealthModule,
     AuthModule,
     NoteModule,
     ChannelModule,
+    TopicModule,
   ],
   providers: [
     {

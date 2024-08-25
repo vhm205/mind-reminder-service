@@ -1,17 +1,16 @@
 {
   "name": "mind-reminder-service",
-  "version": "0.0.1",
+  "version": "1.0.1",
   "description": "Mind Reminder",
-  "author": "M2",
+  "author": "M2T",
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
     "prebuild": "rimraf dist",
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
-    "start:prod": "yarn build && pm2 start ecosystem.config.js --env production",
-    "start": "nest start",
-    "start:dev": "nest start --watch",
+    "start": "yarn build && pm2 start ecosystem.config.js --env production",
+    "dev": "nest start --watch",
     "start:debug": "nest start --debug --watch",
     "pm2": "nest build && pm2 start ecosystem.config.js",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
@@ -35,8 +34,10 @@
     "@nestjs/platform-express": "^10.3.4",
     "@nestjs/swagger": "^7.3.1",
     "@nestjs/terminus": "^10.2.3",
+    "@notionhq/client": "^2.2.15",
     "@tirke/node-cache-manager-ioredis": "^3.6.0",
     "@types/amqplib": "^0.10.5",
+    "agenda": "^5.0.0",
     "agenda-nest": "3.0.0-next",
     "amqp-connection-manager": "^4.1.14",
     "amqplib": "^0.10.3",
@@ -50,14 +51,12 @@
     "helmet": "^7.1.0",
     "moment-timezone": "^0.5.45",
     "mongoose": "^8.2.2",
-    "nestjs-telegraf": "^2.7.0",
     "node-telegram-bot-api": "^0.65.1",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
     "reflect-metadata": "^0.2.1",
     "rimraf": "^5.0.5",
     "rxjs": "^7.8.1",
-    "telegraf": "^4.16.3",
     "ua-parser-js": "^1.0.37"
   },
   "devDependencies": {
@@ -107,11 +106,5 @@
     ],
     "coverageDirectory": "../coverage",
     "testEnvironment": "node"
-  },
-  "lint-staged": {
-    "*.ts": [
-      "yarn format",
-      "git add ."
-    ]
   }
 }

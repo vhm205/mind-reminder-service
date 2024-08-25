@@ -1,0 +1,27 @@
+{
+  notion_database: {
+    database: {
+      error: false,
+      data: {
+        object: 'database',
+        id: 'e854fc3d-c706-4d93-a367-7c37a3b14c8e',
+        cover: null,
+        icon: null,
+        created_time: '2024-08-24T07:35:00.000Z',
+        created_by: [Object],
+        last_edited_by: [Object],
+        last_edited_time: '2024-08-24T07:35:00.000Z',
+        title: [Array],
+        description: [],
+        is_inline: false,
+        properties: [Object],
+        parent: [Object],
+        url: 'https://www.notion.so/e854fc3dc7064d93a3677c37a3b14c8e',
+        public_url: null,
+        archived: false,
+        in_trash: false,
+        request_id: '3f5a1e3f-9930-42d8-bed2-e018d71f4d76'
+      }
+    }
+  }
+}

@@ -14,7 +14,6 @@ const {
   AUTH_SECRET,
   ACCESS_TOKEN_SECRET,
   ACCESS_TOKEN_EXPIRES_IN,
-  API_URL,
   CLIENT_URL,
   API_VERSION,
   TELEGRAM_BOT_TOKEN,
@@ -22,6 +21,7 @@ const {
   MONGODB_URI,
   QUEUE_COLLECTION_REMINDER,
   QUEUE_REMINDER,
+  NOTION_SECRET,
 } = process.env;
 
 if (NODE_ENV && !['test', 'production', 'development'].includes(NODE_ENV)) {
@@ -48,8 +48,8 @@ if (!COOKIE_TOKEN_NAME) {
   throw new Error('Cookie env is not define');
 }
 
-if (!API_URL || !CLIENT_URL || !API_VERSION) {
-  throw new Error('API_URL || CLIENT_URL env is not define');
+if (!CLIENT_URL || !API_VERSION) {
+  throw new Error('CLIENT_URL env is not define');
 }
 
 if (!TELEGRAM_BOT_TOKEN || !TELEGRAM_BOT_USERNAME) {
@@ -72,7 +72,6 @@ export default {
   AUTH_SECRET,
   ACCESS_TOKEN_SECRET,
   ACCESS_TOKEN_EXPIRES_IN,
-  API_URL,
   CLIENT_URL,
   API_VERSION,
   TELEGRAM_BOT_TOKEN,
@@ -80,4 +79,5 @@ export default {
   MONGODB_URI,
   QUEUE_COLLECTION_REMINDER,
   QUEUE_REMINDER,
+  NOTION_SECRET,
 };

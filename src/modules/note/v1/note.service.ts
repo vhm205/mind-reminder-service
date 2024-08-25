@@ -1,5 +1,4 @@
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
-import { InjectQueue } from 'agenda-nest';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 // import { CACHE_MANAGER } from '@nestjs/cache-manager';
@@ -16,7 +15,6 @@ import {
   UpdateNoteDto,
   UpdateNoteResponseDto,
 } from './dtos';
-import env from '@environments';
 
 @Injectable()
 export class NoteService {
@@ -25,7 +23,7 @@ export class NoteService {
   constructor(
     @InjectModel(Note.name) private noteModel: Model<Note>,
     @InjectModel(Channel.name) private channelModel: Model<Channel>,
-    @InjectQueue(env.QUEUE_REMINDER) private queue: any,
+    // @InjectQueue(env.QUEUE_REMINDER) private queue: any,
     // @Inject(CACHE_MANAGER) private redisCache: RedisCache,
   ) {}
 
@@ -67,9 +65,9 @@ export class NoteService {
         user: userId,
       });
 
-      if (pushNotification) {
-        this.queue.schedule('30 minutes', 'reminder', newNote);
-      }
+      // if (pushNotification) {
+      //   this.queue.schedule('30 minutes', 'reminder', newNote);
+      // }
 
       return { data: { id: newNote.id }, statusCode: HttpStatus.CREATED };
     } catch (error) {
@@ -99,7 +97,7 @@ export class NoteService {
       return {
         data: {
           id: note.id,
-          content: note.content,
+          content: note.blocks,
           tags: note.tags,
           channel: note.channel as Channel,
           createdAt: note.createdAt,

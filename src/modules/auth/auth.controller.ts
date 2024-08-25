@@ -36,7 +36,7 @@ export class AuthController {
   ) {
     const { accessToken } = await this.authService.login(user, headers);
     this.authService.setAuthCookies(res, accessToken);
-    res.redirect(`${env.CLIENT_URL}/notes?redirected=true&uid=${user.uid}`);
+    res.redirect(`${env.CLIENT_URL}/topics?redirected=true&uid=${user.uid}`);
   }
 
   @Get('telegram')

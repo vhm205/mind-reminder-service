@@ -145,30 +145,30 @@ export class AuthService {
   setAuthCookies(res: Response, accessToken: string): void {
     res.cookie(env.COOKIE_TOKEN_NAME, accessToken, {
       httpOnly: true,
-      secure: isProd(),
+      secure: !isProd(),
       signed: true,
       maxAge: +env.ACCESS_TOKEN_EXPIRES_IN * 1000,
-      sameSite: isProd() ? 'lax' : 'strict',
+      sameSite: isProd() ? 'lax' : 'none',
     });
     res.cookie('isAuthenticated', true, {
       httpOnly: false,
-      secure: false,
+      secure: !isProd(),
       maxAge: +env.ACCESS_TOKEN_EXPIRES_IN * 1000,
-      sameSite: isProd() ? 'lax' : 'strict',
+      sameSite: isProd() ? 'lax' : 'none',
     });
   }
 
   clearTokenCookies(res: Response): void {
     res.clearCookie(env.COOKIE_TOKEN_NAME, {
       httpOnly: true,
-      secure: isProd(),
+      secure: !isProd(),
       signed: true,
-      sameSite: isProd() ? 'lax' : 'strict',
+      sameSite: isProd() ? 'lax' : 'none',
     });
     res.clearCookie('isAuthenticated', {
       httpOnly: false,
-      secure: false,
-      sameSite: isProd() ? 'lax' : 'strict',
+      secure: !isProd(),
+      sameSite: isProd() ? 'lax' : 'none',
     });
   }
 
