@@ -47,36 +47,8 @@ export class NoteQueue {
         },
       });
 
-      // const initialInterval = 1;
-      // const now = momentTZ();
-      // const spacedRepetition = spacedRepetitionInterval(
-      //   initialInterval,
-      //   repetitionNumber,
-      // );
-      // const nextReviewTime = now.add(spacedRepetition, 'seconds');
-      // const timestamp = nextReviewTime.valueOf();
-      // const formattedNextReviewTime = nextReviewTime.format(
-      //   'YYYY-MM-DD HH:mm:ss',
-      // );
-
-      // if (lastRunAt) {
-      //   const currentDatetime = momentTZ();
-      //   const runAt = momentTZ(lastRunAt).format();
-      //   const diffHours = currentDatetime.diff(runAt, 'minutes');
-      //   const isBefore = currentDatetime.isBefore(runAt, 'minutes');
-      //   const isAfter = currentDatetime.isAfter(runAt, 'minutes');
-      //   const isSame = currentDatetime.isSame(runAt, 'minutes');
-      //   const isSameOrAfter = currentDatetime.isSameOrAfter(runAt, 'minutes');
-      //   const isSameOrBefore = currentDatetime.isSameOrBefore(runAt, 'minutes');
-      //   const isLocal = currentDatetime.isLocal();
-
-      // await this.queue.every(timestamp.toString(), 'reminder', {
-      //   ...job.attrs.data,
-      //   repetitionNumber: repetitionNumber + 1,
-      // });
-
       done();
-    } catch (error: any) {
+    } catch (error) {
       this.logger.error('job error: ', error, job);
     }
   }

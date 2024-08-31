@@ -1,10 +1,8 @@
 import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
+import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { InjectQueue } from 'agenda-nest';
-import { Agenda } from 'agenda';
 
-import env from '@environments';
 import { Channel, EChannelStatus, Note, Topic } from '@schema';
 import { PageDto, PageMetaDto, ResponseType } from '@common';
 import type {
@@ -18,7 +16,14 @@ import type {
   DeleteNoteQuery,
 } from './dtos';
 import { NotionService } from 'src/modules/notion/notion.service';
-import { momentTZ, spacedRepetitionInterval } from '@helpers';
+import {
+  NOTE_CREATED_EVENT,
+  NoteCreatedEvent,
+} from './events/note-created.event';
+import {
+  NOTE_DELETED_EVENT,
+  NoteDeletedEvent,
+} from './events/note-deleted.event';
 
 @Injectable()
 export class NoteService {
@@ -28,7 +33,7 @@ export class NoteService {
     @InjectModel(Topic.name) private topicModel: Model<Topic>,
     @InjectModel(Note.name) private noteModel: Model<Note>,
     @InjectModel(Channel.name) private channelModel: Model<Channel>,
-    @InjectQueue(env.QUEUE_REMINDER) private queue: Agenda,
+    private readonly eventEmitter: EventEmitter2,
     private readonly notion: NotionService,
   ) {}
 
@@ -64,23 +69,6 @@ export class NoteService {
         };
       }
 
-      const { id: pageId } = topic.metadata;
-      const {
-        error,
-        data: pageData,
-        message,
-      }: any = await this.notion.insertPage(pageId, {
-        title,
-      });
-      if (error) throw new Error(message);
-
-      const block: any = await this.notion.insertBlock(pageData.id, {
-        blocks,
-        html,
-        markdown,
-      });
-      if (block.error) throw new Error(block.message);
-
       if (channelId) {
         const userChannel = await this.channelModel
           .findOne({
@@ -98,18 +86,6 @@ export class NoteService {
         channel = userChannel._id;
       }
 
-      const { type, database_id } = pageData.parent;
-      const metadata = {
-        page: {
-          id: pageData.id,
-          url: pageData.url,
-          parent: {
-            id: database_id,
-            type,
-          },
-        },
-      };
-
       const newNote = await this.noteModel.create({
         topic: topicId,
         title,
@@ -120,42 +96,30 @@ export class NoteService {
         pushNotification,
         repetitionNumber: 1,
         user: userId,
-        metadata,
       });
+      const { id: pageId } = topic.metadata;
+      const noteId = newNote._id.toString();
 
-      if (pushNotification) {
-        this.createSchedulerRepeat(newNote);
-      }
+      const eventPayload = new NoteCreatedEvent({
+        noteId,
+        pageId,
+        title,
+        blocks,
+        html,
+        markdown,
+        pushNotification,
+        retry: 0,
+      });
+      this.eventEmitter.emit(NOTE_CREATED_EVENT, eventPayload);
 
       return {
-        data: { id: newNote._id.toString() },
+        data: { id: noteId },
         statusCode: HttpStatus.CREATED,
       };
     } catch (error) {
       this.logger.error('create note error: ', error.message);
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
-  }
-
-  async createSchedulerRepeat(payload: any) {
-    const array = Array.from({ length: 8 }, (_, i) => i + 1);
-    const initialInterval = 1;
-    const now = momentTZ();
-
-    const asyncCreateJob = array.map(async (repetitionNumber: number) => {
-      const spacedRepetition = spacedRepetitionInterval(
-        initialInterval,
-        repetitionNumber,
-      );
-      const nextReviewTime = now.add(spacedRepetition, 'minutes');
-
-      const job = this.queue.create('reminder', payload);
-      job.unique({ 'data.noteId': payload._id.toString() });
-      job.priority('high');
-      job.schedule(nextReviewTime.toDate());
-      return job.save();
-    });
-    await Promise.all(asyncCreateJob);
   }
 
   async updateNote(payload: UpdateNoteDto, userId: string) {
@@ -176,26 +140,6 @@ export class NoteService {
           $set: dataUpdate,
         },
       );
-
-      if (blocks && Array.isArray(blocks)) {
-        const asyncUpdateBlocks = blocks.map((block) => {
-          return this.notion.updateBlock({
-            blockId: block.id,
-            payload: {
-              paragraph: {
-                rich_text: [
-                  {
-                    text: {
-                      content: block.content,
-                    },
-                  },
-                ],
-              },
-            },
-          });
-        });
-        await Promise.all(asyncUpdateBlocks);
-      }
 
       return {
         data: {
@@ -223,10 +167,13 @@ export class NoteService {
       }
 
       const { page } = note.metadata;
-      await Promise.all([
-        this.noteModel.deleteOne({ _id: noteId, user: userId }),
-        this.notion.movePageToTrash({ pageId: page.id }),
-      ]);
+      await this.noteModel.deleteOne({ _id: noteId, user: userId });
+
+      const eventPayload = new NoteDeletedEvent({
+        pageId: page.id,
+        retry: 0,
+      });
+      this.eventEmitter.emit(NOTE_DELETED_EVENT, eventPayload);
 
       return {
         statusCode: HttpStatus.NO_CONTENT,

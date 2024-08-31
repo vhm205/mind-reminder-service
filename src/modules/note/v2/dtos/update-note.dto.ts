@@ -1,11 +1,6 @@
 import { PartialType, PickType } from '@nestjs/mapped-types';
 import { CreateNoteDto } from './create-note.dto';
 
-type Block = {
-  id: string;
-  content: string;
-};
-
 export class UpdateNoteDto extends PartialType(
   PickType(CreateNoteDto, [
     'title',

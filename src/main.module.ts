@@ -1,5 +1,6 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { APP_FILTER, APP_GUARD, APP_PIPE } from '@nestjs/core';
+import { EventEmitterModule } from '@nestjs/event-emitter';
 import { MongooseModule } from '@nestjs/mongoose';
 import { CacheModule } from '@nestjs/cache-manager';
 import { ioRedisStore } from '@tirke/node-cache-manager-ioredis';
@@ -42,6 +43,7 @@ import {
         },
       }),
     }),
+    EventEmitterModule.forRoot(),
     HealthModule,
     AuthModule,
     NoteModule,
