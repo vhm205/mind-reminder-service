@@ -10,10 +10,11 @@ import {
 import { Job } from 'agenda';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { Channel, Note } from '@schema';
+import { Channel, EChannelStatus, Note } from '@schema';
 import env from '@environments';
 
 import { TelegramService } from 'src/modules/telegram/telegram.service';
+import { convertMarkdownToTelegramFormat } from 'src/helpers/telegram';
 
 @Queue(env.QUEUE_REMINDER!)
 @Injectable()
@@ -33,13 +34,21 @@ export class NoteQueue {
       // this.logger.log({ job_attr: job.attrs });
 
       const [channel, note] = await Promise.all([
-        this.channelModel.findOne({ user }).lean(),
+        this.channelModel
+          .findOne({ user, isDefault: true, status: EChannelStatus.ACTIVE })
+          .lean(),
         this.noteModel.findById(noteId).lean(),
       ]);
-      if (!channel || !note) return;
+      if (!channel || !note) {
+        return this.logger.error('channel or note not found', job.attrs);
+      }
 
       const { id } = channel.metadata;
-      this.telegramService.sendMessage(id, markdown);
+      const message = convertMarkdownToTelegramFormat(markdown);
+
+      this.telegramService.sendMessage(id, message, {
+        parse_mode: 'HTML',
+      });
 
       await this.noteModel.findByIdAndUpdate(noteId, {
         $inc: {

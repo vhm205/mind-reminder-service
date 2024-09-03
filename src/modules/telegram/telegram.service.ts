@@ -12,7 +12,11 @@ export class TelegramService {
     // this.bot = new TelegramBot(env.TELEGRAM_BOT_TOKEN, { polling: true });
   }
 
-  sendMessage(chatId: string, text: string) {
-    bot.sendMessage(chatId, text);
+  sendMessage(
+    chatId: string,
+    text: string,
+    opts?: TelegramBot.SendMessageOptions,
+  ) {
+    return bot.sendMessage(chatId, text, opts);
   }
 }

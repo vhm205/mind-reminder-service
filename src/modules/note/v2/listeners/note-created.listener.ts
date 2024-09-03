@@ -30,11 +30,11 @@ export class NoteCreatedListener {
     try {
       const {
         noteId,
-        pageId,
-        title,
-        blocks,
-        html,
-        markdown,
+        // pageId,
+        // title,
+        // blocks,
+        // html,
+        // markdown,
         pushNotification,
       } = payload;
 
@@ -43,39 +43,39 @@ export class NoteCreatedListener {
         this.createSchedulerRepeat(note);
       }
 
-      const {
-        error,
-        data: pageData,
-        message,
-      }: any = await this.notion.insertPage(pageId, {
-        title,
-      });
-      if (error) throw new Error(message);
-
-      const block: any = await this.notion.insertBlock(pageData.id, {
-        blocks,
-        html,
-        markdown,
-      });
-      if (block.error) throw new Error(block.message);
-
-      const { type, database_id } = pageData.parent;
-      const metadata = {
-        page: {
-          id: pageData.id,
-          url: pageData.url,
-          parent: {
-            id: database_id,
-            type,
-          },
-        },
-      };
-
-      await this.noteModel.findByIdAndUpdate(noteId, {
-        $set: {
-          metadata,
-        },
-      });
+      // const {
+      //   error,
+      //   data: pageData,
+      //   message,
+      // }: any = await this.notion.insertPage(pageId, {
+      //   title,
+      // });
+      // if (error) throw new Error(message);
+      //
+      // const block: any = await this.notion.insertBlock(pageData.id, {
+      //   blocks,
+      //   html,
+      //   markdown,
+      // });
+      // if (block.error) throw new Error(block.message);
+      //
+      // const { type, database_id } = pageData.parent;
+      // const metadata = {
+      //   page: {
+      //     id: pageData.id,
+      //     url: pageData.url,
+      //     parent: {
+      //       id: database_id,
+      //       type,
+      //     },
+      //   },
+      // };
+      //
+      // await this.noteModel.findByIdAndUpdate(noteId, {
+      //   $set: {
+      //     metadata,
+      //   },
+      // });
     } catch (error) {
       this.logger.error(error.message, error.stack);
       this.logger.error('Retry to create note...', payload.retry);
@@ -99,7 +99,7 @@ export class NoteCreatedListener {
         initialInterval,
         repetitionNumber,
       );
-      const nextReviewTime = now.add(spacedRepetition, 'days');
+      const nextReviewTime = now.add(spacedRepetition, 'minutes');
 
       const job = this.queue.create('reminder', payload);
       job.unique({ 'data.noteId': payload._id.toString() });

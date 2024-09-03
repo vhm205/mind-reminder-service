@@ -94,7 +94,7 @@ export class NoteService {
         tags,
         channel,
         pushNotification,
-        repetitionNumber: 1,
+        repetitionNumber: 0,
         user: userId,
       });
       const { id: pageId } = topic.metadata;
