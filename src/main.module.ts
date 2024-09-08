@@ -39,7 +39,7 @@ import {
         defaultLockLimit: 1,
         defaultLockLifetime: 10000,
         catch(onrejected) {
-          console.log({ onrejected });
+          console.error({ onrejected });
         },
       }),
     }),

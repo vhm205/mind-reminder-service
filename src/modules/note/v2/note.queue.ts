@@ -1,13 +1,15 @@
 import { Injectable, Logger } from '@nestjs/common';
 import {
   Define,
+  InjectQueue,
   OnJobComplete,
   OnJobFail,
   OnJobSuccess,
   OnQueueError,
+  OnQueueReady,
   Queue,
 } from 'agenda-nest';
-import { Job } from 'agenda';
+import Agenda, { Job } from 'agenda';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Channel, EChannelStatus, Note } from '@schema';
@@ -24,6 +26,7 @@ export class NoteQueue {
   constructor(
     @InjectModel(Channel.name) private readonly channelModel: Model<Channel>,
     @InjectModel(Note.name) private readonly noteModel: Model<Note>,
+    @InjectQueue(env.QUEUE_REMINDER) private queue: Agenda,
     private readonly telegramService: TelegramService,
   ) {}
 
@@ -31,7 +34,7 @@ export class NoteQueue {
   async sendReminder(job: Job, done: Function) {
     try {
       const { _id: noteId, markdown, user } = job.attrs.data;
-      // this.logger.log({ job_attr: job.attrs });
+      // this.logger.log('define_job_reminder', { job_attr: job.attrs });
 
       const [channel, note] = await Promise.all([
         this.channelModel
@@ -62,6 +65,15 @@ export class NoteQueue {
     }
   }
 
+  @OnQueueReady()
+  async onQueueReady() {
+    const now = new Date();
+    await this.queue.cancel({
+      nextRunAt: { $lt: now },
+    });
+  }
+
+  // called when a job finishes, regardless of if it succeeds or fails
   @OnJobComplete('reminder')
   onJobComplete(job: Job) {
     job.remove();
@@ -69,16 +81,16 @@ export class NoteQueue {
 
   @OnJobSuccess('reminder')
   onJobSuccess(job: Job) {
-    this.logger.log('job_success', job);
+    this.logger.log('JOB_SUCCESS', job.toJSON()._id);
   }
 
   @OnJobFail('reminder')
   onJobFail(job: Job) {
-    this.logger.warn('job_fail', job);
+    this.logger.warn('JOB_FAIL', job.toJSON()._id);
   }
 
   @OnQueueError()
   onError(error: any) {
-    this.logger.error('queue error: ', error);
+    this.logger.error('QUEUE_ERROR: ', { error });
   }
 }

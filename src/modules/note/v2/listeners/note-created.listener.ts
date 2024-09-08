@@ -12,7 +12,6 @@ import {
   NOTE_CREATED_EVENT,
   type NoteCreatedEvent,
 } from '../events/note-created.event';
-import { NotionService } from 'src/modules/notion/notion.service';
 
 @Injectable()
 export class NoteCreatedListener {
@@ -22,25 +21,25 @@ export class NoteCreatedListener {
     @InjectModel(Note.name) private noteModel: Model<Note>,
     @InjectQueue(env.QUEUE_REMINDER) private queue: Agenda,
     private readonly eventEmitter: EventEmitter2,
-    private readonly notion: NotionService,
   ) {}
 
   @OnEvent(NOTE_CREATED_EVENT, { async: true })
   async handleNoteCreatedEvent(payload: NoteCreatedEvent) {
     try {
-      const {
-        noteId,
-        // pageId,
-        // title,
-        // blocks,
-        // html,
-        // markdown,
-        pushNotification,
-      } = payload;
+      const { noteId, pushNotification } = payload;
 
       if (pushNotification) {
         const note = await this.noteModel.findById(noteId).lean();
-        this.createSchedulerRepeat(note);
+        if (!note) {
+          throw new Error('Note is not found');
+        }
+
+        const { _id, user, markdown } = note;
+        this.createSchedulerRepeat({
+          _id,
+          user,
+          markdown,
+        });
       }
 
       // const {
@@ -70,7 +69,7 @@ export class NoteCreatedListener {
       //     },
       //   },
       // };
-      //
+
       // await this.noteModel.findByIdAndUpdate(noteId, {
       //   $set: {
       //     metadata,
@@ -99,7 +98,7 @@ export class NoteCreatedListener {
         initialInterval,
         repetitionNumber,
       );
-      const nextReviewTime = now.add(spacedRepetition, 'minutes');
+      const nextReviewTime = now.add(spacedRepetition, 'day');
 
       const job = this.queue.create('reminder', payload);
       job.unique({ 'data.noteId': payload._id.toString() });

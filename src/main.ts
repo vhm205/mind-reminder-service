@@ -22,6 +22,8 @@ async function bootstrap() {
       methods: ['GET', 'POST', 'DELETE', 'PATCH', 'OPTIONS'],
     });
 
+    app.enableShutdownHooks();
+
     app.setGlobalPrefix('api', {
       exclude: [
         {

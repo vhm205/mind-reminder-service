@@ -1,10 +1,17 @@
-import { HttpException, HttpStatus, Injectable, Logger } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  Logger,
+  OnApplicationShutdown,
+} from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 
 import { Channel, EChannelStatus, Note, Topic } from '@schema';
 import { PageDto, PageMetaDto, ResponseType } from '@common';
+
 import type {
   CreateNoteDto,
   CreateNoteResponseDto,
@@ -15,18 +22,15 @@ import type {
   UpdateNoteDto,
   DeleteNoteQuery,
 } from './dtos';
-import { NotionService } from 'src/modules/notion/notion.service';
 import {
   NOTE_CREATED_EVENT,
   NoteCreatedEvent,
 } from './events/note-created.event';
-import {
-  NOTE_DELETED_EVENT,
-  NoteDeletedEvent,
-} from './events/note-deleted.event';
+import { NotionService } from 'src/modules/notion/notion.service';
+import { TelegramService } from 'src/modules/telegram/telegram.service';
 
 @Injectable()
-export class NoteService {
+export class NoteService implements OnApplicationShutdown {
   private readonly logger = new Logger();
 
   constructor(
@@ -35,7 +39,16 @@ export class NoteService {
     @InjectModel(Channel.name) private channelModel: Model<Channel>,
     private readonly eventEmitter: EventEmitter2,
     private readonly notion: NotionService,
+    private readonly telegram: TelegramService,
   ) {}
+
+  async onApplicationShutdown(signal?: string) {
+    try {
+      await this.telegram.sendAlertMessage(`Server is shutdown: ${signal}`);
+    } catch (error) {
+      this.logger.error(error);
+    }
+  }
 
   async createNote(
     payload: CreateNoteDto,
@@ -166,14 +179,14 @@ export class NoteService {
         throw new HttpException('Note is Not Found', HttpStatus.BAD_REQUEST);
       }
 
-      const { page } = note.metadata;
       await this.noteModel.deleteOne({ _id: noteId, user: userId });
 
-      const eventPayload = new NoteDeletedEvent({
-        pageId: page.id,
-        retry: 0,
-      });
-      this.eventEmitter.emit(NOTE_DELETED_EVENT, eventPayload);
+      // const { page } = note.metadata;
+      // const eventPayload = new NoteDeletedEvent({
+      //   pageId: page.id,
+      //   retry: 0,
+      // });
+      // this.eventEmitter.emit(NOTE_DELETED_EVENT, eventPayload);
 
       return {
         statusCode: HttpStatus.NO_CONTENT,
