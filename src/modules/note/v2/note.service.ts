@@ -3,6 +3,7 @@ import {
   HttpStatus,
   Injectable,
   Logger,
+  NotFoundException,
   OnApplicationShutdown,
 } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
@@ -28,6 +29,10 @@ import {
 } from './events/note-created.event';
 import { NotionService } from 'src/modules/notion/notion.service';
 import { TelegramService } from 'src/modules/telegram/telegram.service';
+import {
+  NOTE_UPDATED_EVENT,
+  NoteUpdatedEvent,
+} from './events/note-updated.event';
 
 @Injectable()
 export class NoteService implements OnApplicationShutdown {
@@ -141,11 +146,23 @@ export class NoteService implements OnApplicationShutdown {
         payload;
       const dataUpdate: Record<string, string | boolean | string[]> = {};
 
+      const note = await this.noteModel.findById(noteId).lean();
+      if (!note) {
+        throw new NotFoundException('Note is not found');
+      }
+
       title && (dataUpdate['title'] = title);
       blocks && (dataUpdate['blocks'] = blocks);
       channelId && (dataUpdate['channel'] = channelId);
-      pushNotification && (dataUpdate['pushNotification'] = pushNotification);
-      tags && (dataUpdate['tags'] = tags);
+
+      if (tags && tags.length) {
+        dataUpdate['tags'] = tags;
+      }
+
+      if (note.pushNotification !== pushNotification) {
+        dataUpdate['pushNotification'] =
+          pushNotification ?? note.pushNotification;
+      }
 
       const result = await this.noteModel.updateOne(
         { _id: noteId, user: userId },
@@ -153,6 +170,12 @@ export class NoteService implements OnApplicationShutdown {
           $set: dataUpdate,
         },
       );
+
+      const eventPayload = new NoteUpdatedEvent({
+        noteId,
+        retry: 0,
+      });
+      this.eventEmitter.emit(NOTE_UPDATED_EVENT, eventPayload);
 
       return {
         data: {
@@ -222,6 +245,7 @@ export class NoteService implements OnApplicationShutdown {
         status,
         topic,
         channel,
+        pushNotification,
         createdAt,
         updatedAt,
       } = note;
@@ -233,6 +257,7 @@ export class NoteService implements OnApplicationShutdown {
           blocks,
           tags,
           status,
+          pushNotification,
           topic: topic as Topic,
           channel: channel as Channel,
           createdAt,

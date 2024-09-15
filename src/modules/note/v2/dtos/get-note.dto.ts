@@ -29,6 +29,9 @@ export class GetNoteResponseDto {
   status: string;
 
   @ApiResponseProperty()
+  pushNotification: boolean;
+
+  @ApiResponseProperty()
   topic: Topic;
 
   @ApiResponseProperty()
@@ -41,6 +44,9 @@ export class GetNoteResponseDto {
   updatedAt: Date | null;
 }
 
+/**
+ * DEPRECATED
+ */
 export class GetNotionNotesQueryDto {
   databaseId: string;
 }

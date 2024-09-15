@@ -7,9 +7,7 @@ type Block = {
 
 export class NoteUpdatedEvent {
   noteId: string;
-  pageId: string;
-  title: string;
-  blocks: Block[];
+  blocks?: Block[];
   retry: number;
 
   constructor(init: Partial<NoteUpdatedEvent>) {

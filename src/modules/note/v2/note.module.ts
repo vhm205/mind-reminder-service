@@ -17,6 +17,7 @@ import { NotionService } from 'src/modules/notion/notion.service';
 import { TelegramService } from 'src/modules/telegram/telegram.service';
 import { NoteCreatedListener } from './listeners/note-created.listener';
 import { NoteDeletedListener } from './listeners/note-deleted.listener';
+import { NoteUpdatedListener } from './listeners/note-updated.listener';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { NoteDeletedListener } from './listeners/note-deleted.listener';
     NoteService,
     NoteQueue,
     NoteCreatedListener,
+    NoteUpdatedListener,
     NoteDeletedListener,
     NotionService,
     TelegramService,
