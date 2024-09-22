@@ -2,8 +2,8 @@ import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { APP_FILTER, APP_GUARD, APP_PIPE } from '@nestjs/core';
 import { EventEmitterModule } from '@nestjs/event-emitter';
 import { MongooseModule } from '@nestjs/mongoose';
-import { CacheModule } from '@nestjs/cache-manager';
-import { ioRedisStore } from '@tirke/node-cache-manager-ioredis';
+// import { CacheModule } from '@nestjs/cache-manager';
+// import { ioRedisStore } from '@tirke/node-cache-manager-ioredis';
 import { AgendaModule } from 'agenda-nest';
 import env from '@environments';
 
@@ -23,11 +23,11 @@ import {
 
 @Module({
   imports: [
-    CacheModule.register({
-      store: ioRedisStore,
-      url: process.env.REDIS_URL,
-      isGlobal: true,
-    }),
+    // CacheModule.register({
+    //   store: ioRedisStore,
+    //   url: process.env.REDIS_URL,
+    //   isGlobal: true,
+    // }),
     MongooseModule.forRootAsync({
       useClass: MongooseConfigService,
     }),
