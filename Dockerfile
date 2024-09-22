@@ -1,22 +1,20 @@
-FROM node:18-alpine AS build-stage
+FROM node:20-slim AS base
 
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+RUN corepack enable
+COPY . /app
 WORKDIR /app
 
-COPY package.json yarn.lock ./
-RUN yarn install --frozen-lockfile --production --prefer-offline
+FROM base AS prod-deps
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --prod --frozen-lockfile
 
-COPY . .
+FROM base AS build
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
+RUN pnpm run build
 
-RUN yarn build
-
-# --- Production Image --- #
-FROM node:18-alpine AS production
-
-WORKDIR /app
-
-COPY --from=build-stage /app/dist ./dist
-COPY --from=build-stage /app/node_modules ./node_modules
-
-EXPOSE 1515
-CMD ["node", "dist/main"]
-
+FROM base
+COPY --from=prod-deps /app/node_modules /app/node_modules
+COPY --from=build /app/dist /app/dist
+EXPOSE 2002
+CMD [ "pnpm", "start" ]
