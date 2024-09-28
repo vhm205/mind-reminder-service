@@ -148,13 +148,13 @@ export class AuthService {
       secure: !isProd(),
       signed: true,
       maxAge: +env.ACCESS_TOKEN_EXPIRES_IN * 1000,
-      sameSite: 'none', //isProd() ? 'lax' : 'none',
+      sameSite: isProd() ? 'lax' : 'none',
     });
     res.cookie('isAuthenticated', true, {
       httpOnly: false,
       secure: !isProd(),
       maxAge: +env.ACCESS_TOKEN_EXPIRES_IN * 1000,
-      sameSite: 'none', //isProd() ? 'lax' : 'none',
+      sameSite: isProd() ? 'lax' : 'none',
     });
   }
 
@@ -163,12 +163,12 @@ export class AuthService {
       httpOnly: true,
       secure: !isProd(),
       signed: true,
-      sameSite: 'none', //isProd() ? 'lax' : 'none',
+      sameSite: isProd() ? 'lax' : 'none',
     });
     res.clearCookie('isAuthenticated', {
       httpOnly: false,
       secure: !isProd(),
-      sameSite: 'none', //isProd() ? 'lax' : 'none',
+      sameSite: isProd() ? 'lax' : 'none',
     });
   }
 
