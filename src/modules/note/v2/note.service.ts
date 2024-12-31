@@ -115,12 +115,12 @@ export class NoteService implements OnApplicationShutdown {
         repetitionNumber: 0,
         user: userId,
       });
-      const { id: pageId } = topic.metadata;
+      const metadata = topic?.metadata;
       const noteId = newNote._id.toString();
 
       const eventPayload = new NoteCreatedEvent({
         noteId,
-        pageId,
+        pageId: metadata?.id,
         title,
         blocks,
         html,
